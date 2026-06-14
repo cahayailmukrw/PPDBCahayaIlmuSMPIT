@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import pool from '@/lib/db';
 
 export default function RegistrationForm() {
   const [formData, setFormData] = useState({
@@ -81,12 +82,56 @@ export default function RegistrationForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [registrationNumber, setRegistrationNumber] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Generate random registration number
-    const regNum = 'SMPIT-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-    setRegistrationNumber(regNum);
-    setIsSubmitted(true);
+
+    try {
+      // Generate random registration number
+      const regNum = 'SMPIT-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+
+      // Insert data into database
+      const query = `
+        INSERT INTO registrations (
+          registration_number,
+          nama_lengkap, nisn, nik, tempat_lahir, tanggal_lahir, jenis_kelamin, agama,
+          anak_ke, jumlah_saudara, golongan_darah, tinggi_badan, berat_badan, riwayat_penyakit, hobi, cita_cita,
+          alamat, rt, rw, kelurahan, kecamatan, kabupaten, provinsi, kode_pos,
+          nama_sekolah_asal, alamat_sekolah_asal, npsn_sekolah_asal, tahun_lulus,
+          nama_ayah, nik_ayah, tempat_lahir_ayah, tanggal_lahir_ayah, pekerjaan_ayah, pendidikan_ayah, penghasilan_ayah, no_hp_ayah, alamat_kantor_ayah,
+          nama_ibu, nik_ibu, tempat_lahir_ibu, tanggal_lahir_ibu, pekerjaan_ibu, pendidikan_ibu, penghasilan_ibu, no_hp_ibu, alamat_kantor_ibu,
+          punya_wali, nama_wali, hubungan_wali, pekerjaan_wali, no_hp_wali, alamat_wali,
+          kartu_keluarga, akta_kelahiran, rapor_sd, pas_foto, surat_keterangan_sehat, ijazah_sd
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
+          $17, $18, $19, $20, $21, $22, $23, $24,
+          $25, $26, $27, $28,
+          $29, $30, $31, $32, $33, $34, $35, $36, $37,
+          $38, $39, $40, $41, $42, $43, $44, $45, $46,
+          $47, $48, $49, $50, $51, $52,
+          $53, $54, $55, $56, $57, $58
+        )
+      `;
+
+      const values = [
+        regNum,
+        formData.namaLengkap, formData.nisn, formData.nik, formData.tempatLahir, formData.tanggalLahir, formData.jenisKelamin, formData.agama,
+        formData.anakKe || null, formData.jumlahSaudara, formData.golonganDarah || null, formData.tinggiBadan || null, formData.beratBadan || null, formData.riwayatPenyakit || null, formData.hobi || null, formData.citaCita || null,
+        formData.alamat, formData.rt || null, formData.rw || null, formData.kelurahan, formData.kecamatan, formData.kabupaten, formData.provinsi, formData.kodePos,
+        formData.namaSekolahAsal, formData.alamatSekolahAsal, formData.npsnSekolahAsal || null, formData.tahunLulus,
+        formData.namaAyah, formData.nikAyah, formData.tempatLahirAyah || null, formData.tanggalLahirAyah || null, formData.pekerjaanAyah, formData.pendidikanAyah, formData.penghasilanAyah, formData.noHpAyah, formData.alamatKantorAyah || null,
+        formData.namaIbu, formData.nikIbu, formData.tempatLahirIbu || null, formData.tanggalLahirIbu || null, formData.pekerjaanIbu, formData.pendidikanIbu, formData.penghasilanIbu, formData.noHpIbu, formData.alamatKantorIbu || null,
+        formData.punyaWali, formData.namaWali || null, formData.hubunganWali || null, formData.pekerjaanWali || null, formData.noHpWali || null, formData.alamatWali || null,
+        formData.kartuKeluarga?.name || null, formData.aktaKelahiran?.name || null, formData.raporSD?.name || null, formData.pasFoto?.name || null, formData.suratKeteranganSehat?.name || null, formData.ijazahSD?.name || null
+      ];
+
+      await pool.query(query, values);
+
+      setRegistrationNumber(regNum);
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error('Error saving registration:', error);
+      alert('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
