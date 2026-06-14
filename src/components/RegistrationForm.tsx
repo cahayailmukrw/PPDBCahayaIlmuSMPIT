@@ -90,11 +90,11 @@ export default function RegistrationForm() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type, files } = e.target;
-    if (type === 'file' && files) {
+    const { name, value, type } = e.target;
+    if (type === 'file' && 'files' in e.target && e.target.files) {
       setFormData({
         ...formData,
-        [name]: files[0]
+        [name]: e.target.files[0]
       });
     } else {
       setFormData({
