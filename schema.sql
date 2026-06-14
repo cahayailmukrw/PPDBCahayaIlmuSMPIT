@@ -101,3 +101,18 @@ $$ language 'plpgsql';
 -- Trigger to automatically update updated_at
 CREATE TRIGGER update_registrations_updated_at BEFORE UPDATE ON registrations
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Table for admin users
+CREATE TABLE IF NOT EXISTS admins (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert default admin credentials
+-- Username: cahayailmusmpit
+-- Password: smpitcamucaang
+INSERT INTO admins (username, password) 
+VALUES ('cahayailmusmpit', 'smpitcamucaang')
+ON CONFLICT (username) DO NOTHING;
