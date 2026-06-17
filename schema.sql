@@ -111,8 +111,8 @@ CREATE TABLE IF NOT EXISTS admins (
 );
 
 -- Insert default admin credentials
--- Username: cahayailmusmpit
--- Password: smpitcamucaang
+-- Username: cahayailmukrw
+-- Password: camucaang
 INSERT INTO admins (username, password) 
-VALUES ('cahayailmusmpit', 'smpitcamucaang')
+VALUES ('cahayailmukrw', 'camucaang')
 ON CONFLICT (username) DO NOTHING;

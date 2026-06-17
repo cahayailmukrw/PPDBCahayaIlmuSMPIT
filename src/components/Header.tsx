@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
 export default function Header() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const scrollToSection = (id: string) => {
@@ -47,6 +49,9 @@ export default function Header() {
             <Button onClick={() => scrollToSection('pendaftaran')} className="bg-primary hover:bg-primary/90">
               Daftar Sekarang
             </Button>
+            <Button onClick={() => router.push('/admin/login')} variant="outline" className="text-sm">
+              Admin
+            </Button>
           </div>
 
           <button
@@ -82,6 +87,9 @@ export default function Header() {
             </button>
             <Button onClick={() => scrollToSection('pendaftaran')} className="w-full bg-primary hover:bg-primary/90">
               Daftar Sekarang
+            </Button>
+            <Button onClick={() => router.push('/admin/login')} variant="outline" className="w-full">
+              Admin
             </Button>
           </div>
         )}
