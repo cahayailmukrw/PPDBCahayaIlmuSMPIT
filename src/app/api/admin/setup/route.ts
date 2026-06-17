@@ -1,32 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 
 export async function POST(request: NextRequest) {
   try {
-    // Read the schema.sql file
-    const schemaPath = join(process.cwd(), 'schema.sql');
-    const schema = readFileSync(schemaPath, 'utf-8');
-    
-    // Split by semicolon and execute each statement
-    const statements = schema
-      .split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
-    
-    for (const statement of statements) {
-      if (statement.includes('CREATE TABLE') || statement.includes('INSERT INTO')) {
-        await pool.query(statement);
-      }
-    }
-    
+    // Create admins table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS admins (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(100) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Insert admin credentials
+    await pool.query(`
+      INSERT INTO admins (username, password) 
+      VALUES ('cahayailmukrw', 'camucaang')
+      ON CONFLICT (username) DO UPDATE SET password = EXCLUDED.password
+    `);
+
     return NextResponse.json({ success: true, message: 'Database setup completed' });
   } catch (error) {
     console.error('Error during setup:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Setup failed' 
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Setup failed'
     }, { status: 500 });
   }
 }
