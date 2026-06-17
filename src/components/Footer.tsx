@@ -59,7 +59,7 @@ export default function Footer() {
           <div>
             <h4 className="text-lg font-bold mb-4">Admin</h4>
             <Button
-              onClick={() => window.location.href = '/admin.html'}
+              onClick={() => window.location.href = '/admin/login'}
               className="bg-white text-primary hover:bg-gray-100 w-full"
             >
               Login Admin
