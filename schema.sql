@@ -102,6 +102,19 @@ $$ language 'plpgsql';
 CREATE TRIGGER update_registrations_updated_at BEFORE UPDATE ON registrations
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+-- Table for PPDB public information
+CREATE TABLE IF NOT EXISTS ppdb_info (
+    id SERIAL PRIMARY KEY,
+    academic_year VARCHAR(50) NOT NULL DEFAULT '',
+    quota VARCHAR(100) NOT NULL DEFAULT '',
+    registration_period VARCHAR(255) NOT NULL DEFAULT '',
+    status VARCHAR(100) NOT NULL DEFAULT '',
+    requirements TEXT NOT NULL DEFAULT '',
+    registration_flow TEXT NOT NULL DEFAULT '',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Table for admin users
 CREATE TABLE IF NOT EXISTS admins (
     id SERIAL PRIMARY KEY,

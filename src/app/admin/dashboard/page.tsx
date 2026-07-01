@@ -4,7 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogOut, Users, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { LogOut, Users, CheckCircle, XCircle, Clock, Save } from 'lucide-react';
 
 interface Registration {
   id: number;
@@ -22,12 +25,30 @@ interface Registration {
   created_at: string;
 }
 
+interface PPDBInfoForm {
+  academic_year: string;
+  quota: string;
+  registration_period: string;
+  status: string;
+  requirements: string;
+  registration_flow: string;
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [ppdbForm, setPPDBForm] = useState<PPDBInfoForm>({
+    academic_year: '',
+    quota: '',
+    registration_period: '',
+    status: '',
+    requirements: '',
+    registration_flow: '',
+  });
+  const [savingPPDB, setSavingPPDB] = useState(false);
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem('adminLoggedIn');
@@ -36,6 +57,7 @@ export default function AdminDashboard() {
       return;
     }
     fetchRegistrations();
+    fetchPPDBInfo();
   }, [router]);
 
   const fetchRegistrations = async () => {
@@ -52,9 +74,55 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchPPDBInfo = async () => {
+    try {
+      const response = await fetch('/api/admin/ppdb-info');
+      const data = await response.json();
+      if (data.success) {
+        setPPDBForm({
+          academic_year: data.ppdbInfo?.academic_year || '',
+          quota: data.ppdbInfo?.quota || '',
+          registration_period: data.ppdbInfo?.registration_period || '',
+          status: data.ppdbInfo?.status || '',
+          requirements: data.ppdbInfo?.requirements || '',
+          registration_flow: data.ppdbInfo?.registration_flow || '',
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching PPDB info:', error);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('adminLoggedIn');
     router.push('/admin/login');
+  };
+
+  const handlePPDBSave = async () => {
+    setSavingPPDB(true);
+    try {
+      const response = await fetch('/api/admin/ppdb-info', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ppdbForm),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setPPDBForm({
+          academic_year: data.ppdbInfo?.academic_year || '',
+          quota: data.ppdbInfo?.quota || '',
+          registration_period: data.ppdbInfo?.registration_period || '',
+          status: data.ppdbInfo?.status || '',
+          requirements: data.ppdbInfo?.requirements || '',
+          registration_flow: data.ppdbInfo?.registration_flow || '',
+        });
+      }
+    } catch (error) {
+      console.error('Error saving PPDB info:', error);
+    } finally {
+      setSavingPPDB(false);
+    }
   };
 
   const handleStatusChange = async (id: number, status: string) => {
@@ -159,6 +227,74 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* PPDB Info Editor */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Kelola Informasi PPDB</CardTitle>
+            <CardDescription>Ubah konten yang tampil di halaman depan publik</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="academic_year">Tahun Ajaran</Label>
+                <Input
+                  id="academic_year"
+                  value={ppdbForm.academic_year}
+                  onChange={(e) => setPPDBForm({ ...ppdbForm, academic_year: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quota">Kuota Siswa</Label>
+                <Input
+                  id="quota"
+                  value={ppdbForm.quota}
+                  onChange={(e) => setPPDBForm({ ...ppdbForm, quota: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="registration_period">Periode Pendaftaran</Label>
+                <Input
+                  id="registration_period"
+                  value={ppdbForm.registration_period}
+                  onChange={(e) => setPPDBForm({ ...ppdbForm, registration_period: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Input
+                  id="status"
+                  value={ppdbForm.status}
+                  onChange={(e) => setPPDBForm({ ...ppdbForm, status: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="requirements">Syarat Pendaftaran</Label>
+              <Textarea
+                id="requirements"
+                rows={5}
+                value={ppdbForm.requirements}
+                onChange={(e) => setPPDBForm({ ...ppdbForm, requirements: e.target.value })}
+                placeholder="Pisahkan setiap syarat dengan baris baru"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="registration_flow">Alur Pendaftaran</Label>
+              <Textarea
+                id="registration_flow"
+                rows={5}
+                value={ppdbForm.registration_flow}
+                onChange={(e) => setPPDBForm({ ...ppdbForm, registration_flow: e.target.value })}
+                placeholder="Pisahkan setiap langkah dengan baris baru"
+              />
+            </div>
+            <Button onClick={handlePPDBSave} disabled={savingPPDB} className="flex items-center gap-2">
+              <Save className="h-4 w-4" />
+              {savingPPDB ? 'Menyimpan...' : 'Simpan Informasi'}
+            </Button>
+          </CardContent>
+        </Card>
 
         {/* Filter */}
         <div className="mb-6">
